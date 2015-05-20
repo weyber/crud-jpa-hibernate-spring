@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="pt-br" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>CRUD - Jsf, Primefaces, Spring, JPA and Hibernate </title>
+            
+<!-- JavaScript -->
+<h:outputScript>
+    function dlg() {
+        PF('det').show();
+        return false;
+    }
+    
+    function dlg2() {
+        PF('det2').show();
+        return false;
+    }
+    
+    function dlg3() {
+        PF('det3').show();
+        return false;
+    }
+    
+</h:outputScript>
+</h:head>
+
+<h:body>
+    <h:form id="form">
+        <h:outputStylesheet library="css" name="primefaces.css" />
+        
+        <p:messages id="msg" autoUpdate="true" 
+                    closable="true" 
+                    for="pesquisar"/>
+        
+        <!-- ToolBar -->
+        <p:toolbar id="tbar" >
+            <f:facet name="left">
+                <p:remoteCommand name="rc" 
+                    actionListener="#{listBean.read2}" 
+                    update=":form"
+                    process="@this, :form:pesquisar" />
+                
+                <p:inputText id="pesquisar" value="#{listBean.pesquisar}" 
+                    required="true"
+                    maxlength="15"
+                    size="60" 
+                    placeholder="Find brand 
+                                (PRESS ENTER FOR SEARCH)"
+                    requiredMessage="Brand not filled !"
+                    title="PRESS ENTER FOR SEARCH"
+                    onkeypress="if (event.keyCode == 13) {rc(); return false; }"/>
+            </f:facet>
+            
+            <f:facet name="right">
+                <p:commandButton id="st" value="List all" 
+                    actionListener="#{listBean.read3}"
+                    update=":form" 
+                    immediate="true"/>
+            </f:facet>
+        </p:toolbar>
+        
+        <!-- DataTable -->
+        <p:dataTable id="dt1" 
+            value="#{listBean.cars}" var="l"  
+            paginator="true" rows="10"
+            paginatorPosition="bottom"
+            emptyMessage="No brand found !">
+
+            <!-- RowToggler -->
+            <p:column style="width:16px" >
+                <p:rowToggler/>
+            </p:column>
+            
+            <p:column style="width:100px">
+                <p:commandLink id="cb5" 
+                    value="insert model"   
+                    update=":form"
+                    process="@this"
+                    oncomplete="dlg3();" 
+                    action="#{carBean.search(l.id)}"
+                    title="Insert model"/>
+            </p:column>
+            
+            <p:column headerText="Brand"  style="text-align:center">
+                <p:outputLabel value="#{l.brand}" />
+            </p:column>
+            
+            <p:column style="width:32px">
+                <p:commandButton icon="ui-icon-trash" 
+                    update=":form:dt1"
+                    immediate="true"
+                    actionListener="#{carBean.delete(l.id)}"
+                    title="Remove brand" />
+            </p:column>
+            
+            <!-- RowExpansion Models -->                                
+            <p:rowExpansion>
+                
+                <!-- DataTable RowExpansion Models -->
+                <p:dataTable value="#{l.models}" var="a"
+                    emptyMessage="No models found !" >
+                
+                    <p:column headerText="Model" style="text-align:center">
+                        <p:outputLabel value="#{a.model}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Category" style="text-align:center">
+                        <p:outputLabel value="#{a.category}"/>
+                    </p:column>
+                    
+                    <p:column style="width:32px">
+                        <p:commandButton icon="ui-icon-pencil" 
+                            update=":form"
+                            process="@this, :form:detalhe2"
+                            oncomplete="dlg2();"
+                            action="#{updateBean.search(l.id, a.id)}"       
+                            title="Edit model" />
+                    </p:column>
+                </p:dataTable>
+            </p:rowExpansion>
+            
+            <f:facet name="footer" >
+                <p:commandButton id="cb3" style="width:32px"
+                    icon="ui-icon-plus"
+                    update=":form:detalhe"
+                    process="@this"
+                    oncomplete="dlg();" 
+                    title="Insert brand"/>
+            </f:facet>
+        </p:dataTable>
+
+        <!-- Dialog Insert Brand -->
+        <p:dialog id="detalhe" header="Insert Brand"
+            resizable="false" 
+            widgetVar="det" 
+            showEffect="explode"
+            modal="true" position="center" 
+            draggable="false"
+            closable="false">
+            
+            <!-- PanelGrid Dialog Insert Brand -->
+            <p:panelGrid id="grid" columns="2" styleClass="companyHeaderGrid">
+                <f:facet name="header">
+                    <p:messages id="msg2" autoUpdate="true" 
+                        closable="true"/>
+                </f:facet>
+                
+                <p:outputLabel for="brand" value="Brand: " />
+                <p:inputText id="brand" 
+                    value="#{carBean.car.brand}" 
+                    required="true"
+                    requiredMessage="Brand not filled !" />
+                 
+                <f:facet name="footer">
+                    <p:commandButton id="cb1"
+                        value="Insert"
+                        action="#{carBean.create}"
+                        update=":form:grid"
+                        process="@this, :form:grid" />
+                        
+                    <p:commandButton 
+                        value="Return"
+                        update=":form"
+                        immediate="true">
+                            <p:resetInput target="grid" />
+                    </p:commandButton>  
+                </f:facet>  
+            </p:panelGrid>
+        </p:dialog>
+        
+        <!-- Dialog Edit Model -->
+        <p:dialog id="detalhe2" header="Edit Model"
+            resizable="false" 
+            widgetVar="det2" 
+            showEffect="explode"
+            modal="true" position="center" 
+            draggable="false"
+            closable="false">
+            
+            <!-- PanelGrid Dialog Edit Model -->
+            <p:panelGrid id="grid2" columns="2" styleClass="companyHeaderGrid">
+                <p:outputLabel for="model2" value="Model: " />
+                <p:inputText id="model2" 
+                    value="#{updateBean.modelUpdate.model}" />
+                
+                <p:outputLabel for="category2" value="Category: " />
+                <p:inputText id="category2" 
+                    value="#{updateBean.modelUpdate.category}"/>
+                 
+                <f:facet name="footer">
+                    <p:commandButton id="cb2"
+                        value="Edit"
+                        action="#{updateBean.update}"
+                        update=":form:grid2"
+                        process="@this, :form:grid2" />
+                        
+                    <p:commandButton value="Return"
+                        update=":form"
+                        immediate="true" />
+                </f:facet>  
+            </p:panelGrid>
+        </p:dialog>
+        
+        <!-- Dialog Insert Model -->
+        <p:dialog id="detalhe3" header="Insert Model"
+            resizable="false" 
+            widgetVar="det3" 
+            showEffect="explode"
+            modal="true" position="center" 
+            draggable="false" 
+            closable="false" >
+            
+            <!-- PanelGrid Dialog Insert Model -->
+            <p:panelGrid id="grid3" columns="2" styleClass="companyHeaderGrid">
+                <f:facet name="header">
+                    <p:messages id="msg3" autoUpdate="true" 
+                        closable="true"/>
+                </f:facet>
+                
+                <p:outputLabel for="model" value="Model: " />
+                <p:inputText id="model" 
+                    value="#{carBean.model.model}" 
+                    required="true"
+                    requiredMessage="Model not filled !" />
+                    
+                <p:outputLabel for="category" value="Category: " />
+                <p:inputText id="category" 
+                    value="#{carBean.model.category}" 
+                    required="true"
+                    requiredMessage="Category not filled !"  />
+                 
+                <f:facet name="footer">
+                    <p:commandButton id="cb"
+                        value="Insert"
+                        action="#{carBean.create2}"
+                        update=":form:grid3"
+                        process="@this, :form:grid3"/>
+                        
+                    <p:commandButton 
+                        value="Return"
+                        update=":form"
+                        immediate="true">
+                            <p:resetInput target="grid3" />
+                    </p:commandButton>  
+                </f:facet>  
+            </p:panelGrid>
+        </p:dialog>     
+    </h:form>
+</h:body>
+</html>
